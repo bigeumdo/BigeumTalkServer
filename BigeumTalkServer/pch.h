@@ -29,9 +29,9 @@ using namespace std;
 
 /* Jsoncpp */
 #ifdef _DEBUG
-#pragma comment(lib, "Debug\\jsoncpp.lib")
+#pragma comment(lib, "jsoncpp\\Debug\\jsoncpp.lib")
 #else
-#pragma comment(lib, "Release\\jsoncpp.lib")
+#pragma comment(lib, "jsoncpp\\Release\\jsoncpp.lib")
 #endif
 
 
