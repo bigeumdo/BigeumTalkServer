@@ -49,8 +49,6 @@ private:
 	unsigned int _maxUser;
 	unsigned int _userCount;
 	unsigned long long _roomId;
-
-	// TODO 비밀 번호
 };
 
 
