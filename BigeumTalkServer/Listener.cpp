@@ -42,8 +42,8 @@ bool Listener::StartAccept(shared_ptr<Service> service)
 	{
 		// 주소 재사용 설정
 		bool flag = true;
-		if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) ==
-			SOCKET_ERROR)
+		if (SOCKET_ERROR == setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag),
+		                               sizeof(flag)))
 		{
 			return false;
 		}
