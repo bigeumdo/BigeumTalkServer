@@ -86,7 +86,6 @@ private:
 	SOCKET _socket = INVALID_SOCKET;
 	SOCKADDR_IN _address = {};
 	atomic<bool> _connected = false;
-	wstring _nickname;
 
 	/* 송신 */
 	RecvBuffer _recvBuffer;
