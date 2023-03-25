@@ -140,6 +140,7 @@ shared_ptr<SendBuffer> PacketHandler::MakeBuffer_S_OTHER_LEAVE(shared_ptr<User> 
 	return MakeSendBuffer(pkt, S_OTHER_LEAVE);
 }
 
+
 /**
  * \brief C_LOGIN 프로토콜을 처리하는 함수
  * \param session C_LOGIN 프로토콜 패킷을 전달한 세션
@@ -153,9 +154,9 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 
 	auto service = session->GetService();
 
+	// 중복 닉네임 확인
 	if (service->IsExistNickname(pkt.nickname))
 	{
-		// 중복 닉네임
 		shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_LOGIN(LOGIN_EXIST);
 		session->Send(sendBuffer);
 		return;
@@ -163,6 +164,8 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 
 	static atomic<unsigned long long> idGenerator = 1;
 
+	// User 객체 생성 후 Session이 참조
+	// Cycle이 형성되므로 주의
 	auto userRef = make_shared<User>();
 	userRef->userId = idGenerator++;
 	userRef->nickname = pkt.nickname;
@@ -170,6 +173,7 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 
 	session->_user = userRef;
 
+	// 닉네임 사용 등록
 	service->UseNickname(pkt.nickname);
 
 #ifdef _DEBUG
@@ -179,6 +183,7 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_LOGIN(LOGIN_SUCCESS, userRef->userId);
 	session->Send(sendBuffer);
 }
+
 
 /**
  * \brief C_ENTER_ROOM 프로토콜을 처리하는 함수
@@ -210,6 +215,7 @@ void Handle_C_ENTER_ROOM(shared_ptr<Session>& session, BYTE* buffer, int len)
 	sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(session->_user);
 	session->_user->room->Broadcast(sendBuffer);
 }
+
 
 /**
  * \brief C_CHAT 프로토콜을 처리하는 함수
