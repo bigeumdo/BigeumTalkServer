@@ -5,8 +5,10 @@
 
 User::~User()
 {
+	ownerSession->GetService()->ReleaseNickname(nickname);
+	ownerSession = nullptr;
 #ifdef _DEBUG
 	// TEMP LOG
-	cout << "[USER LEAVED] " << '[' << userId << "] " << nickname << endl;
+	cout << "[USER DESTROYED] " << '[' << userId << "] " << nickname << endl;
 #endif
 }
