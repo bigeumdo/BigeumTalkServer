@@ -24,7 +24,7 @@ Iocp::Iocp()
 {
 	// CP 생성
 	_iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
-	_ASSERTE(_iocpHandle != INVALID_HANDLE_VALUE);
+	ASSERT_CRASH(_iocpHandle != INVALID_HANDLE_VALUE);
 }
 
 Iocp::~Iocp()

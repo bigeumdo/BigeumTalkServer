@@ -27,13 +27,29 @@ using namespace std;
 #include "Session.h"
 #include "json/json.h"
 
-/* Jsoncpp */
+/* Libraries */
 #ifdef _DEBUG
 #pragma comment(lib, "jsoncpp\\Debug\\jsoncpp.lib")
 #else
 #pragma comment(lib, "jsoncpp\\Release\\jsoncpp.lib")
 #endif
 
+/* Macro */
+#define CRASH(cause)						\
+{											\
+	unsigned int* crash = nullptr;				\
+	__analysis_assume(crash != nullptr);	\
+	*crash = 0xDEADBEEF;					\
+}
+
+#define ASSERT_CRASH(expr)			\
+{									\
+	if (!(expr))					\
+	{								\
+		CRASH("ASSERT_CRASH");		\
+		__analysis_assume(expr);	\
+	}								\
+}
 
 /* Thread Local Storage */
 extern thread_local shared_ptr<SendBufferChunk> LSendBufferChunk; // 스레드 로컬 송신 버퍼

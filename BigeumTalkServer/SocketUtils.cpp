@@ -21,13 +21,13 @@ SocketUtils::~SocketUtils()
 void SocketUtils::Init()
 {
 	WSADATA wsaData;
-	_ASSERTE(WSAStartup(MAKEWORD(2, 2), OUT & wsaData) == 0);
+	ASSERT_CRASH(WSAStartup(MAKEWORD(2, 2), OUT & wsaData) == 0);
 
 	/* 런타임에 주소 얻어오는 API */
 	SOCKET dummySocket = CreateSocket();
-	_ASSERTE(BindWindowsFunction(dummySocket, WSAID_CONNECTEX, reinterpret_cast<LPVOID*>(&ConnectEx)));
-	_ASSERTE(BindWindowsFunction(dummySocket, WSAID_DISCONNECTEX, reinterpret_cast<LPVOID*>(&DisconnectEx)));
-	_ASSERTE(BindWindowsFunction(dummySocket, WSAID_ACCEPTEX, reinterpret_cast<LPVOID*>(&AcceptEx)));
+	ASSERT_CRASH(BindWindowsFunction(dummySocket, WSAID_CONNECTEX, reinterpret_cast<LPVOID*>(&ConnectEx)));
+	ASSERT_CRASH(BindWindowsFunction(dummySocket, WSAID_DISCONNECTEX, reinterpret_cast<LPVOID*>(&DisconnectEx)));
+	ASSERT_CRASH(BindWindowsFunction(dummySocket, WSAID_ACCEPTEX, reinterpret_cast<LPVOID*>(&AcceptEx)));
 	closesocket(dummySocket);
 }
 

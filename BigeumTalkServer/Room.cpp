@@ -159,7 +159,7 @@ unsigned long long RoomManager::CreateRoom(string roomName, unsigned int maxUser
  */
 void RoomManager::CloseRoom(unsigned long long roomId)
 {
-	_ASSERTE(_rooms.erase(roomId) != 0);
+	ASSERT_CRASH(_rooms.erase(roomId) != 0);
 }
 
 

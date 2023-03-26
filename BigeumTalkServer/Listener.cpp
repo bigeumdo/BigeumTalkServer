@@ -94,7 +94,7 @@ HANDLE Listener::GetHandle()
 void Listener::Dispatch(IocpEvent* iocpEvent, int numOfBytes)
 {
 	// Accept Event Dispatch 함수
-	_ASSERTE(iocpEvent->GetEventType() == EventType::Accept);
+	ASSERT_CRASH(iocpEvent->GetEventType() == EventType::Accept);
 
 	auto acceptEvent = static_cast<AcceptEvent*>(iocpEvent);
 

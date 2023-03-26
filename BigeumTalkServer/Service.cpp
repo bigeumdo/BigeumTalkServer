@@ -91,7 +91,7 @@ void Service::ReleaseSession(shared_ptr<Session> session)
 {
 	// 연결이 끊긴 세션 삭제 함수
 	lock_guard<mutex> guard(_mutex);
-	_ASSERTE(_sessions.erase(session) != 0);
+	ASSERT_CRASH(_sessions.erase(session) != 0);
 	_sessionCount--;
 }
 
@@ -114,7 +114,7 @@ void Service::UseNickname(string nickname)
 void Service::ReleaseNickname(string nickname)
 {
 	lock_guard<mutex> guard(_mutex);
-	_ASSERTE(_usedNickname.erase(nickname) != 0);
+	ASSERT_CRASH(_usedNickname.erase(nickname) != 0);
 }
 
 

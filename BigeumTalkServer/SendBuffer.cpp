@@ -18,7 +18,7 @@ SendBuffer::~SendBuffer()
 void SendBuffer::Close(unsigned writeSize)
 {
 	// 할당받은 주소보다 더 많이 데이터를 썻다면 ASSERT
-	_ASSERTE(_allocSize >= writeSize);
+	ASSERT_CRASH(_allocSize >= writeSize);
 	_writeSize = writeSize;
 	_owner->Close(writeSize);
 }
@@ -52,8 +52,8 @@ void SendBufferChunk::Reset()
 shared_ptr<SendBuffer> SendBufferChunk::Open(unsigned allocSize)
 {
 	// 요청한 주소가 청크 크기보다 크거나 청크가 이미 열린 상태면 ASSERT
-	_ASSERTE(allocSize <= SEND_BUFFER_CHUNK_SIZE);
-	_ASSERTE(_open == false);
+	ASSERT_CRASH(allocSize <= SEND_BUFFER_CHUNK_SIZE);
+	ASSERT_CRASH(_open == false);
 
 
 	if (allocSize > FreeSize())
@@ -70,7 +70,7 @@ shared_ptr<SendBuffer> SendBufferChunk::Open(unsigned allocSize)
  */
 void SendBufferChunk::Close(unsigned writeSize)
 {
-	_ASSERTE(_open == true);
+	ASSERT_CRASH(_open == true);
 	_open = false;
 	_usedSize += writeSize;
 }
@@ -90,7 +90,7 @@ shared_ptr<SendBuffer> SendBufferManager::Open(unsigned size)
 		LSendBufferChunk->Reset();
 	}
 
-	_ASSERTE(LSendBufferChunk->IsOpen() == false);
+	ASSERT_CRASH(LSendBufferChunk->IsOpen() == false);
 
 	// 청크의 남은 사용가능한 공간이 요청한 크기보다 작다면 새 청크 받기
 	if (LSendBufferChunk->FreeSize() < size)
