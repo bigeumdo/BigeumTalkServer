@@ -47,8 +47,9 @@ void Session::Disconnect(const WCHAR* cause)
 	{
 		return;
 	}
-
-	wcout << cause << endl;
+#ifdef _DUBUG
+	wcout << L"[DISCONNECT SESSION] " << << cause << endl;
+#endif
 
 	RegisterDisconnect();
 }
@@ -275,18 +276,21 @@ void Session::ProcessRecv(int numOfBytes)
 
 	// 패킷 처리
 	int processLen = 0;
+	int totalDataSize = _recvBuffer.DataSize();
 	while (true)
 	{
-		int dataSize = numOfBytes - processLen;
+		int dataSize = totalDataSize - processLen;
 
 		// 패킷 헤더 파싱 가능 여부
-		if (dataSize <= sizeof(PacketHeader))
+		if (dataSize < sizeof(PacketHeader))
 		{
 			break;
 		}
 
+		BYTE* buffer = &_recvBuffer.ReadPos()[processLen];
+
 		// 헤더 파싱
-		PacketHeader header = *(reinterpret_cast<PacketHeader*>(&_recvBuffer.ReadPos()[processLen]));
+		PacketHeader header = *(reinterpret_cast<PacketHeader*>(buffer));
 
 		// 데이터 파싱 가능 여부
 		if (dataSize < header.size)
@@ -297,7 +301,7 @@ void Session::ProcessRecv(int numOfBytes)
 		shared_ptr<Session> session = static_pointer_cast<Session>(shared_from_this());
 
 		// 패킷 핸들러 함수 호출
-		PacketHandler::HandlePacket(session, &_recvBuffer.ReadPos()[processLen + sizeof(PacketHeader)],
+		PacketHandler::HandlePacket(session, &buffer[sizeof(PacketHeader)],
 		                            header.size - sizeof(PacketHeader),
 		                            header.id);
 
@@ -312,6 +316,9 @@ void Session::ProcessRecv(int numOfBytes)
 		Disconnect(L"OnRead Overflow");
 		return;
 	}
+
+	// 커서 정리
+	_recvBuffer.Clean();
 
 	RegisterRecv();
 }
