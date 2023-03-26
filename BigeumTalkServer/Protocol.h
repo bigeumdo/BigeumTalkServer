@@ -115,7 +115,7 @@ namespace Protocol
 
 	struct C_LOGIN
 	{
-		string nickname = "";
+		string nickname;
 
 		void GetPacket(BYTE* buffer, int len)
 		{
