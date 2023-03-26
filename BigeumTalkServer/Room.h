@@ -64,8 +64,10 @@ public:
 	bool EnterRoom(shared_ptr<User> user, unsigned long long roomId);
 	void LeaveRoom(shared_ptr<User> user);
 	unsigned long long CreateRoom(string roomName, unsigned int maxUser = 100);
-	void CloseRoom(unsigned long long roomId);
 	bool CanEnter(unsigned long long roomId);
+
+private:
+	void CloseRoom(unsigned long long roomId);
 
 private:
 	mutex _mutex;
