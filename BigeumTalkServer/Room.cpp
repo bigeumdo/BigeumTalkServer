@@ -4,7 +4,7 @@
 
 
 Room::Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, unsigned int maxUser)
-	: _owner(owner), _roomName(roomName), _maxUser(maxUser), _userCount(1) /* TEMP USER COUNT */, _roomId(roomId)
+	: _owner(owner), _roomName(roomName), _maxUser(maxUser), /* TEMP USER COUNT */ _userCount(1), _roomId(roomId)
 {
 #ifdef _DEBUG
 	cout << "[ROOM CREATED] " << '[' << _roomId << "] " << _roomName << endl;
@@ -31,7 +31,7 @@ bool Room::Enter(shared_ptr<User> user)
 	_userCount++;
 
 #ifdef _DEBUG
-	cout << "[USER ENTER ROOM] " << '[' << user->userId << "] " << user->nickname << " => " << '[' << _roomId <<
+	cout << "[USER ENTER ROOM] " << '[' << user->userId << "] " << user->nickname << " To " << '[' << _roomId <<
 		"] " << _roomName <<
 		endl;
 #endif
@@ -48,6 +48,11 @@ void Room::Leave(shared_ptr<User> user)
 {
 	_users.erase(user->userId);
 	_userCount--;
+#ifdef _DEBUG
+	cout << "[USER LEAVE ROOM] " << '[' << user->userId << "] " << user->nickname << " From " << '[' << _roomId <<
+		"] " << _roomName <<
+		endl;
+#endif
 }
 
 
@@ -154,7 +159,6 @@ unsigned long long RoomManager::CreateRoom(string roomName, unsigned int maxUser
  */
 void RoomManager::CloseRoom(unsigned long long roomId)
 {
-	lock_guard<mutex> guard(_mutex);
 	_ASSERTE(_rooms.erase(roomId) != 0);
 }
 
