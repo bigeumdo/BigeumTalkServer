@@ -87,12 +87,21 @@ namespace Protocol
 	{
 		Json::Reader reader;
 		Json::Value root;
-		wstring body;
-		body.resize(len / sizeof(WCHAR));
 
-		memcpy((void*)body.data(), buffer, len);
+		int bodyLen = len / sizeof(WCHAR);
 
-		reader.parse(W2S(body), root);
+		// buffer 는 Session 객체의 _recvBuffer 에서 비롯된 주소
+		// _recvBuffer는 한번에 하나의 쓰레드만 접근하기에
+		// 다른 쓰레드의 개입을 신경쓰지 않아도 됨.
+		// 따라서 버퍼에 직접 접근하여 역직렬화를 시도함.
+		// 본래 값을 임시로 저장한 후 문자열의 마무리 표시 후 역직렬화
+		// 과정이 끝난 후 본래 값으로 되돌림.
+		WCHAR tempWchar = ((WCHAR*)buffer)[len / sizeof(WCHAR)];
+		((WCHAR*)buffer)[len / sizeof(WCHAR)] = L'\0';
+
+		reader.parse(W2S((WCHAR*)buffer), root);
+
+		((WCHAR*)buffer)[len / sizeof(WCHAR)] = tempWchar;
 
 		return root;
 	}
