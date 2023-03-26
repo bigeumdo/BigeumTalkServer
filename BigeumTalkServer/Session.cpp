@@ -243,9 +243,8 @@ void Session::ProcessDisconnect()
 			roomManager->LeaveRoom(_user);
 		}
 
-		// 유저 정보 정리
-		_user->ownerSession->GetService()->ReleaseNickname(_user->nickname);
-		_user->ownerSession = nullptr;
+		// 유저 참조 해제
+		_user = nullptr;
 	}
 
 	GetService()->ReleaseSession(GetSessionRef()); // 서비스에서 세션 삭제
