@@ -213,15 +213,11 @@ void Handle_C_ENTER_ROOM(shared_ptr<Session>& session, BYTE* buffer, int len)
 		return;
 	}
 
-	// 입장 성공
+	// 입장 성공 - 시도한 유저에게
 	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_ENTER_ROOM(
 		ENTER_ROOM_SUCCESS, session->_user);
 	session->Send(sendBuffer);
 	sendBuffer = nullptr;
-
-	// 입장 알림
-	sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(session->_user);
-	session->_user->room->Broadcast(sendBuffer);
 }
 
 
