@@ -77,7 +77,7 @@ shared_ptr<Session> Service::CreateSession()
  */
 void Service::AddSession(shared_ptr<Session> session)
 {
-	lock_guard<mutex> guard(_mutex);
+	lock_guard<mutex> guard(_mutexSession);
 	_sessionCount++;
 	_sessions.insert(session);
 }
@@ -90,7 +90,7 @@ void Service::AddSession(shared_ptr<Session> session)
 void Service::ReleaseSession(shared_ptr<Session> session)
 {
 	// 연결이 끊긴 세션 삭제 함수
-	lock_guard<mutex> guard(_mutex);
+	lock_guard<mutex> guard(_mutexSession);
 	ASSERT_CRASH(_sessions.erase(session) != 0);
 	_sessionCount--;
 }
@@ -102,7 +102,7 @@ void Service::ReleaseSession(shared_ptr<Session> session)
  */
 void Service::UseNickname(string nickname)
 {
-	lock_guard<mutex> guard(_mutex);
+	lock_guard<mutex> guard(_mutexNickname);
 	_usedNickname.insert(nickname);
 }
 
@@ -113,7 +113,7 @@ void Service::UseNickname(string nickname)
  */
 void Service::ReleaseNickname(string nickname)
 {
-	lock_guard<mutex> guard(_mutex);
+	lock_guard<mutex> guard(_mutexNickname);
 	ASSERT_CRASH(_usedNickname.erase(nickname) != 0);
 }
 

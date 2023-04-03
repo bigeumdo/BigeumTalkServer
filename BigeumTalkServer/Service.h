@@ -39,7 +39,7 @@ public:
 	shared_ptr<RoomManager> GetRoomManager() { return _roomManager; }
 
 private:
-	mutex _mutex;
+	mutex _mutexSession, _mutexNickname;
 
 	shared_ptr<Iocp> _iocp;
 	SOCKADDR_IN _address;
