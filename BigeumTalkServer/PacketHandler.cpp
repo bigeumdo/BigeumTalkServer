@@ -56,10 +56,18 @@ shared_ptr<SendBuffer> PacketHandler::MakeBuffer_S_LOGIN(unsigned short resultCo
  */
 shared_ptr<SendBuffer> PacketHandler::MakeBuffer_S_ENTER_ROOM(unsigned short resultCode, shared_ptr<User> user)
 {
-	Protocol::S_ENTER_ROOM pkt;
+	Protocol::S_ENTER_ROOM pkt{0,};
 	pkt.resultCode = resultCode;
-	pkt.roomId = user->room->GetRoomId();
-	pkt.roomName = user->room->GetRoomName();
+
+	if (pkt.resultCode == ENTER_ROOM_SUCCESS)
+	{
+		pkt.roomId = user->room->GetRoomId();
+		pkt.roomName = user->room->GetRoomName();
+	}
+	else
+	{
+		return MakeSendBuffer(pkt, S_ENTER_ROOM);
+	}
 
 	// 채팅방에 있는 유저 리스트
 	pkt.users.reserve(user->room->GetUsersList().size());
@@ -205,15 +213,11 @@ void Handle_C_ENTER_ROOM(shared_ptr<Session>& session, BYTE* buffer, int len)
 		return;
 	}
 
-	// 입장 성공
+	// 입장 성공 - 시도한 유저에게
 	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_ENTER_ROOM(
 		ENTER_ROOM_SUCCESS, session->_user);
 	session->Send(sendBuffer);
 	sendBuffer = nullptr;
-
-	// 입장 알림
-	sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(session->_user);
-	session->_user->room->Broadcast(sendBuffer);
 }
 
 

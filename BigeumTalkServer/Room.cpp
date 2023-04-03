@@ -4,7 +4,7 @@
 
 
 Room::Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, unsigned int maxUser)
-	: _owner(owner), _roomName(roomName), _maxUser(maxUser), /* TEMP USER COUNT */ _userCount(1), _roomId(roomId)
+	: _owner(owner), _roomName(roomName), _maxUser(maxUser), /* TEMP USER COUNT */ _userCount(0), _roomId(roomId)
 {
 #ifdef _DEBUG
 	cout << "[ROOM CREATED] " << '[' << _roomId << "] " << _roomName << endl;
@@ -26,15 +26,31 @@ Room::~Room()
  */
 bool Room::Enter(shared_ptr<User> user)
 {
-	user->room = shared_from_this(); // Cycle 유의
-	_users[user->userId] = user;
-	_userCount++;
+	{
+		// 입장 처리만 Lock
+		unique_lock lock(_sMutex);
+
+		// 최대 허용 인원 확인
+		if (_userCount >= _maxUser)
+		{
+			return false;
+		}
+
+		user->room = shared_from_this(); // Cycle 유의
+		_users[user->userId] = user;
+		_userCount++;
+	}
+
+	// 입장 알림
+	auto sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(user);
+	Broadcast(sendBuffer);
 
 #ifdef _DEBUG
 	cout << "[USER ENTER ROOM] " << '[' << user->userId << "] " << user->nickname << " To " << '[' << _roomId <<
 		"] " << _roomName <<
 		endl;
 #endif
+
 
 	return true;
 }
@@ -46,22 +62,29 @@ bool Room::Enter(shared_ptr<User> user)
  */
 void Room::Leave(shared_ptr<User> user)
 {
-	_users.erase(user->userId);
-	_userCount--;
+	{
+		// 퇴장 처리만 Lock
+		unique_lock lock(_sMutex);
+
+		_users.erase(user->userId);
+		_userCount--;
+
 #ifdef _DEBUG
-	cout << "[USER LEAVE ROOM] " << '[' << user->userId << "] " << user->nickname << " From " << '[' << _roomId <<
-		"] " << _roomName <<
-		endl;
+		cout << "[USER LEAVE ROOM] " << '[' << user->userId << "] " << user->nickname << " From " << '[' << _roomId <<
+			"] " << _roomName <<
+			endl;
 #endif
-}
 
+		if (_userCount == 0)
+		{
+			GetRoomManager()->CloseRoom(_roomId); // 참조 해제
+			return;
+		}
+	}
 
-/**
- * \brief 채팅방을 닫는 함수
- */
-void Room::Close()
-{
-	_users.clear();
+	// 퇴장 알림
+	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_OTHER_LEAVE(user);
+	Broadcast(sendBuffer);
 }
 
 
@@ -71,7 +94,7 @@ void Room::Close()
  */
 void Room::Broadcast(shared_ptr<SendBuffer> sendBuffer)
 {
-	lock_guard<mutex> guard(_mutex);
+	shared_lock lock(_sMutex);
 	for (auto& p : _users)
 	{
 		p.second->ownerSession->Send(sendBuffer);
@@ -96,9 +119,15 @@ RoomManager::~RoomManager()
  */
 bool RoomManager::EnterRoom(shared_ptr<User> user, unsigned long long roomId)
 {
-	lock_guard<mutex> guard(_mutex);
+	lock_guard lock(_mutex);
+	// 방 존재 여부 확인
+	auto room = _rooms.find(roomId);
+	if (room == _rooms.end())
+	{
+		return false;
+	}
 
-	return CanEnter(roomId) == true ? _rooms[roomId]->Enter(user) : false;
+	return room->second->Enter(user);
 }
 
 
@@ -109,26 +138,13 @@ bool RoomManager::EnterRoom(shared_ptr<User> user, unsigned long long roomId)
  */
 void RoomManager::LeaveRoom(shared_ptr<User> user)
 {
-	lock_guard<mutex> guard(_mutex);
+	lock_guard lock(_mutex);
 	if (user->room == nullptr)
 	{
 		return;
 	}
-	unsigned long long roomId = user->room->GetRoomId();
-	auto& room = _rooms[roomId];
 
-	room->Leave(user);
-
-	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_OTHER_LEAVE(user);
-	room->Broadcast(sendBuffer);
-
-	user->room = nullptr;
-
-	if (room->GetRoomUserCount() == 0)
-	{
-		room->Close();
-		CloseRoom(roomId);
-	}
+	user->room->Leave(user);
 }
 
 
@@ -140,13 +156,12 @@ void RoomManager::LeaveRoom(shared_ptr<User> user)
  */
 unsigned long long RoomManager::CreateRoom(string roomName, unsigned int maxUser)
 {
-	lock_guard<mutex> guard(_mutex);
-
 	// ID는 1부터 CreateRoom이 호출되는 순서대로 증가
 	static atomic<unsigned long long> idGenerator = 1;
 	shared_ptr<RoomManager> roomManager = shared_from_this();
 	auto room = make_shared<Room>(roomManager, idGenerator, roomName, maxUser);
 
+	lock_guard lock(_mutex);
 	_rooms.insert({idGenerator, room});
 
 	return idGenerator++;
@@ -159,21 +174,6 @@ unsigned long long RoomManager::CreateRoom(string roomName, unsigned int maxUser
  */
 void RoomManager::CloseRoom(unsigned long long roomId)
 {
+	// LeaveRoom 에서만 호출되므로 Lock 불필요
 	ASSERT_CRASH(_rooms.erase(roomId) != 0);
-}
-
-
-/**
- * \brief 채팅방에 입장이 가능한지 확인 반환하는 함수
- * \param roomId 확인할 채팅방 ID
- * \return 입장 가능 여부
- */
-bool RoomManager::CanEnter(unsigned long long roomId)
-{
-	if (_rooms.find(roomId) == _rooms.end())
-	{
-		return false;
-	}
-
-	return _rooms[roomId]->GetRoomMaxUser() > _rooms[roomId]->GetRoomUserCount();
 }

@@ -1,9 +1,11 @@
 ﻿#pragma once
 
 #define WIN32_LEAN_AND_MEAN
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 
 #include <iostream>
 #include <mutex>
+#include <shared_mutex>
 #include <memory>
 #include <vector>
 #include <list>

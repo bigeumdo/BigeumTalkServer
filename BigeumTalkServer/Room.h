@@ -13,7 +13,7 @@ class Room : public enable_shared_from_this<Room>
 	friend RoomManager;
 public:
 	Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName = "Room",
-	     unsigned int maxUser = 100);
+	     unsigned int maxUser = 5);
 	~Room();
 
 	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
@@ -39,10 +39,10 @@ public:
 private:
 	bool Enter(shared_ptr<User> user);
 	void Leave(shared_ptr<User> user);
-	void Close();
 
 private:
-	mutex _mutex;
+	// 입장 퇴장 빈도보다 Broadcast 빈도가 더 많음
+	shared_mutex _sMutex;
 	map<unsigned long long, shared_ptr<User>> _users;
 	weak_ptr<RoomManager> _owner;
 	string _roomName;
@@ -59,11 +59,12 @@ private:
  */
 class RoomManager : public enable_shared_from_this<RoomManager>
 {
+	friend Room;
 public:
 	~RoomManager();
 	bool EnterRoom(shared_ptr<User> user, unsigned long long roomId);
 	void LeaveRoom(shared_ptr<User> user);
-	unsigned long long CreateRoom(string roomName, unsigned int maxUser = 100);
+	unsigned long long CreateRoom(string roomName, unsigned int maxUser = 3);
 	bool CanEnter(unsigned long long roomId);
 
 private:
