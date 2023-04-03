@@ -70,7 +70,7 @@ void Session::Send(shared_ptr<SendBuffer> sendBuffer)
 
 	{
 		// Scatter-Gather IO를 위한 큐에 메모리 버퍼 저장
-		lock_guard<mutex> guard(_mutex);
+		lock_guard lock(_mutex);
 
 		_sendQueue.push(sendBuffer);
 
@@ -174,7 +174,7 @@ void Session::RegisterSend()
 	{
 		// _sendQueue에 쌓여있는 데이터를 _sendEvent의 _sendBuffers로 이동
 		// Scatter-Gather IO : 여러개의 메모리 버퍼를 지정하여 전송
-		lock_guard<mutex> guard(_mutex);
+		lock_guard lock(_mutex);
 		int writeSize = 0;
 		while (_sendQueue.empty() == false)
 		{
@@ -277,6 +277,7 @@ void Session::ProcessRecv(int numOfBytes)
 	// 패킷 처리
 	int processLen = 0;
 	int totalDataSize = _recvBuffer.DataSize();
+
 	while (true)
 	{
 		int dataSize = totalDataSize - processLen;
@@ -339,7 +340,7 @@ void Session::ProcessSend(int numOfBytes)
 		return;
 	}
 
-	lock_guard<mutex> guard(_mutex);
+	lock_guard lock(_mutex);
 	if (_sendQueue.empty())
 	{
 		_sendRegistered.store(false);
