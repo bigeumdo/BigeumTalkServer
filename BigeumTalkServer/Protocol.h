@@ -88,8 +88,6 @@ namespace Protocol
 		Json::Reader reader;
 		Json::Value root;
 
-		int bodyLen = len / sizeof(WCHAR);
-
 		// buffer 는 Session 객체의 _recvBuffer 에서 비롯된 주소
 		// _recvBuffer는 한번에 하나의 쓰레드만 접근하기에
 		// 다른 쓰레드의 개입을 신경쓰지 않아도 됨.
