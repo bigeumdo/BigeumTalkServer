@@ -162,8 +162,8 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 
 	auto service = session->GetService();
 
-	// 중복 닉네임 확인
-	if (service->IsExistNickname(pkt.nickname))
+	// 닉네임 사용 등록 중복 닉네임 확인
+	if (service->UseNickname(pkt.nickname) == false)
 	{
 		shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_LOGIN(LOGIN_EXIST);
 		session->Send(sendBuffer);
@@ -180,9 +180,6 @@ void Handle_C_LOGIN(shared_ptr<Session>& session, BYTE* buffer, int len)
 	userRef->ownerSession = session;
 
 	session->_user = userRef;
-
-	// 닉네임 사용 등록
-	service->UseNickname(pkt.nickname);
 
 #ifdef _DEBUG
 	cout << "[USER LOGIN] " << '[' << userRef->userId << "] " << userRef->nickname << endl;

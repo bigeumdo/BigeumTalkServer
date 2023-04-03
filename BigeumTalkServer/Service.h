@@ -25,7 +25,7 @@ public:
 	void ReleaseSession(shared_ptr<Session> session);
 
 	/* 로그인 */
-	void UseNickname(string nickname);
+	bool UseNickname(string nickname);
 	void ReleaseNickname(string nickname);
 	bool IsExistNickname(string nickname);
 

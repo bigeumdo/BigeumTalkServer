@@ -99,11 +99,18 @@ void Service::ReleaseSession(shared_ptr<Session> session)
 /**
  * \brief 유저가 사용할 닉네임 등록
  * \param nickname 사용할 닉네임
+ * \return 닉네임 등록 성공 여부
  */
-void Service::UseNickname(string nickname)
+bool Service::UseNickname(string nickname)
 {
 	lock_guard<mutex> guard(_mutexNickname);
+	if (_usedNickname.find(nickname) != _usedNickname.end())
+	{
+		return false;
+	}
 	_usedNickname.insert(nickname);
+
+	return true;
 }
 
 
@@ -115,15 +122,4 @@ void Service::ReleaseNickname(string nickname)
 {
 	lock_guard<mutex> guard(_mutexNickname);
 	ASSERT_CRASH(_usedNickname.erase(nickname) != 0);
-}
-
-
-/**
- * \brief 해당 닉네임이 사용중인지 확인하는 함수
- * \param nickname 확인할 닉네임
- * \return 닉네임의 존재 여부
- */
-bool Service::IsExistNickname(string nickname)
-{
-	return _usedNickname.find(nickname) != _usedNickname.end();
 }
