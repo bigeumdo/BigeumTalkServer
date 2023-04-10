@@ -27,13 +27,12 @@ using namespace std;
 #include "Global.h"
 #include "SendBuffer.h"
 #include "Session.h"
-#include "json/json.h"
 
 /* Libraries */
 #ifdef _DEBUG
-#pragma comment(lib, "jsoncpp\\Debug\\jsoncpp.lib")
+#pragma comment(lib, "protobuf\\Debug\\libprotobufd.lib")
 #else
-#pragma comment(lib, "jsoncpp\\Release\\jsoncpp.lib")
+#pragma comment(lib, "protobuf\\Release\\libprotobuf.lib")
 #endif
 
 /* Macro */
