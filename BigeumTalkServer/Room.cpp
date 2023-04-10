@@ -4,7 +4,7 @@
 
 
 Room::Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, unsigned int maxUser)
-	: _owner(owner), _roomName(roomName), _maxUser(maxUser), /* TEMP USER COUNT */ _userCount(0), _roomId(roomId)
+	: _owner(owner), _roomName(roomName), _maxUser(10000), /* TEMP USER COUNT */ _userCount(0), _roomId(roomId)
 {
 #ifdef _DEBUG
 	cout << "[ROOM CREATED] " << '[' << _roomId << "] " << _roomName << endl;
@@ -41,8 +41,16 @@ bool Room::Enter(shared_ptr<User> user)
 		_userCount++;
 	}
 
+	Protocol::S_OTHER_ENTER pkt;
+	auto pUser = new Protocol::User();
+	pUser->set_id(user->userId);
+	pUser->set_nickname(user->nickname);
+	pkt.set_allocated_user(pUser);
+	pkt.set_timestamp(std::chrono::duration_cast<chrono::seconds>(chrono::system_clock::now().time_since_epoch()).
+		count());
+
 	// 입장 알림
-	auto sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(user);
+	auto sendBuffer = PacketHandler::MakeBuffer_S_OTHER_ENTER(pkt);
 	Broadcast(sendBuffer);
 
 #ifdef _DEBUG
@@ -83,7 +91,16 @@ void Room::Leave(shared_ptr<User> user)
 	}
 
 	// 퇴장 알림
-	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_OTHER_LEAVE(user);
+	Protocol::S_OTHER_LEAVE pkt;
+	auto pUser = new Protocol::User();
+	pUser->set_id(user->userId);
+	pUser->set_nickname(user->nickname);
+	pkt.set_allocated_user(pUser);
+	pkt.set_timestamp(std::chrono::duration_cast<chrono::seconds>(chrono::system_clock::now().time_since_epoch()).
+		count());
+
+
+	shared_ptr<SendBuffer> sendBuffer = PacketHandler::MakeBuffer_S_OTHER_LEAVE(pkt);
 	Broadcast(sendBuffer);
 }
 
