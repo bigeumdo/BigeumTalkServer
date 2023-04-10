@@ -1,0 +1,113 @@
+syntax = 'proto3';
+package Protocol;
+
+message User 
+{
+	string nickname = 1;
+	uint64 id = 2;
+	// TODO: token
+}
+
+message Room
+{
+	string name = 1;
+	uint64 id = 2;
+}
+
+message C_LOGIN 
+{
+	User user = 1;
+}
+
+message S_LOGIN
+{
+	bool success = 1;
+	uint64 serverId = 2;
+}
+
+message C_CREATE_ROOM
+{
+	User user = 1;
+	string roomName = 2;
+}
+
+message S_CREATE_ROOM
+{
+	bool success = 1;
+	Room room = 2;
+}
+
+message C_ENTER_ROOM
+{
+	User user = 1;
+	uint64 roomId = 2;
+}
+
+message S_ENTER_ROOM
+{
+	bool success = 1;
+
+	message RoomData 
+	{
+		string name = 1;
+		repeated User users = 2;
+	}
+
+	oneof is_fail
+	{
+		bool isFail = 2;
+		RoomData roomData = 3;
+	}
+}
+
+message C_LEAVE_ROOM
+{
+	User user = 1;
+	uint64 roomId = 2;
+}
+
+message S_LEAVE_ROOM
+{
+	bool success = 1;
+}
+
+message C_ROOM_LIST
+{
+	User user = 1;
+}
+
+message S_ROOM_LIST
+{
+	uint32 roomCount = 1;
+	repeated Room rooms = 2;
+}
+
+message C_CHAT
+{
+	User user = 1;
+	string msg = 2;
+}
+
+message S_CHAT
+{
+	oneof is_server
+	{
+		bool isServer = 1;
+		User user = 2;
+	}
+
+	string msg = 3;
+	double timestamp = 4;
+}
+
+message S_OTHER_ENTER
+{
+	User user = 1;
+	double timestamp = 2;
+}
+
+message S_OTHER_LEAVE
+{
+	User user = 1;
+	double timestamp = 2;
+}
