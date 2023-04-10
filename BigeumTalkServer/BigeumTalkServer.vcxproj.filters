@@ -54,11 +54,11 @@
     <ClCompile Include="SendBuffer.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="Protocol.cpp">
-      <Filter>Protocol</Filter>
-    </ClCompile>
     <ClCompile Include="Global.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.pb.cc">
+      <Filter>Protocol</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,11 +95,19 @@
     <ClInclude Include="SendBuffer.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="Global.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Protocol.pb.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Protobuf\Protocol.proto">
+      <Filter>Protocol</Filter>
+    </None>
+    <None Include="..\Protobuf\GenProtocol.bat">
+      <Filter>Protocol</Filter>
+    </None>
   </ItemGroup>
 </Project>
