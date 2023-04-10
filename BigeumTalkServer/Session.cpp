@@ -302,9 +302,11 @@ void Session::ProcessRecv(int numOfBytes)
 		shared_ptr<Session> session = static_pointer_cast<Session>(shared_from_this());
 
 		// 패킷 핸들러 함수 호출
-		PacketHandler::HandlePacket(session, &buffer[sizeof(PacketHeader)],
-		                            header.size - sizeof(PacketHeader),
-		                            header.id);
+		if (PacketHandler::HandlePacket(session, buffer, header.size) == false)
+		{
+			Disconnect(L"OnRead Overflow");
+			return;
+		}
 
 		processLen += header.size;
 	}
@@ -340,13 +342,14 @@ void Session::ProcessSend(int numOfBytes)
 		return;
 	}
 
-	lock_guard lock(_mutex);
+	unique_lock lock(_mutex);
 	if (_sendQueue.empty())
 	{
 		_sendRegistered.store(false);
 	}
 	else
 	{
+		lock.unlock();
 		RegisterSend();
 	}
 }

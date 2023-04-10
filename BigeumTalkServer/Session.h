@@ -104,3 +104,13 @@ public:
 	/* 콘텐츠 정보 */
 	shared_ptr<User> _user = nullptr; // Cycle, 게임의 경우 가변 배열로 나의 캐릭터들 표현
 };
+
+/**
+ * \brief PacketHeader 구조체 \n
+ * \details 전송될 패킷의 헤더입니다.
+ */
+struct PacketHeader
+{
+	unsigned short size;
+	unsigned short id;
+};
