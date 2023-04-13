@@ -3,8 +3,10 @@
 #include "PacketHandler.h"
 
 
-Room::Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, unsigned int maxUser)
-	: _owner(owner), _roomName(roomName), _maxUser(10000), /* TEMP USER COUNT */ _userCount(0), _roomId(roomId)
+Room::Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, string hostName,
+           unsigned int maxUser)
+	: _owner(owner), _roomName(roomName), _hostName(hostName), _maxUser(maxUser), /* TEMP USER COUNT */ _userCount(0),
+	  _roomId(roomId)
 {
 #ifdef _DEBUG
 	cout << "[ROOM CREATED] " << '[' << _roomId << "] " << _roomName << endl;
@@ -18,6 +20,19 @@ Room::~Room()
 #endif
 }
 
+
+vector<pair<unsigned long long, string>> Room::GetUsersList()
+{
+	unique_lock lock(_sMutex);
+	vector<pair<unsigned long long, string>> ret;
+
+	for (auto& user : _users)
+	{
+		ret.emplace_back(user.second->userId, user.second->nickname);
+	}
+
+	return ret;
+}
 
 /**
  * \brief 인자 user를 채팅방에 입장 시키는 함수
@@ -171,19 +186,52 @@ void RoomManager::LeaveRoom(shared_ptr<User> user)
  * \param maxUser 최대 허용 유저 수
  * \return 생성된 채팅방의 ID
  */
-unsigned long long RoomManager::CreateRoom(string roomName, unsigned int maxUser)
+unsigned long long RoomManager::CreateRoom(shared_ptr<User> user, string roomName, unsigned int maxUser)
 {
 	// ID는 1부터 CreateRoom이 호출되는 순서대로 증가
 	static atomic<unsigned long long> idGenerator = 1;
+	unsigned long long roomId = idGenerator.fetch_add(1);
 	shared_ptr<RoomManager> roomManager = shared_from_this();
-	auto room = make_shared<Room>(roomManager, idGenerator, roomName, maxUser);
+	auto room = make_shared<Room>(roomManager, roomId, roomName, user->nickname, maxUser);
 
 	lock_guard lock(_mutex);
-	_rooms.insert({idGenerator, room});
+	_rooms.emplace(roomId, room);
 
-	return idGenerator++;
+	return roomId;
 }
 
+
+vector<RoomData> RoomManager::GetRoomList()
+{
+	lock_guard lock(_mutex);
+	vector<RoomData> ret;
+	for (auto& room : _rooms)
+	{
+		RoomData roomData;
+		roomData.roomId = room.second->GetRoomId();
+		roomData.roomName = room.second->GetRoomName();
+		roomData.hostName = room.second->GetHostName();
+		roomData.maxUser = room.second->GetRoomMaxUser();
+		roomData.userCount = room.second->GetRoomUserCount();
+
+		ret.push_back(roomData);
+	}
+
+	return ret;
+}
+
+RoomData RoomManager::GetRoomData(unsigned long long roomId)
+{
+	lock_guard lock(_mutex);
+	RoomData roomData;
+	roomData.roomId = roomId;
+	roomData.roomName = _rooms[roomId]->GetRoomName();
+	roomData.hostName = _rooms[roomId]->GetHostName();
+	roomData.maxUser = _rooms[roomId]->GetRoomMaxUser();
+	roomData.userCount = _rooms[roomId]->GetRoomUserCount();
+
+	return roomData;
+}
 
 /**
  * \brief 채팅방을 닫는 함수

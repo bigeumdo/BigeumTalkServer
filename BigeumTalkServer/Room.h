@@ -12,14 +12,17 @@ class Room : public enable_shared_from_this<Room>
 {
 	friend RoomManager;
 public:
-	Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName = "Room",
-	     unsigned int maxUser = 5);
+	Room(shared_ptr<RoomManager> owner, unsigned long long roomId, string roomName, string hostName,
+	     unsigned int maxUser);
 	~Room();
 
 	void Broadcast(shared_ptr<SendBuffer> sendBuffer);
 
 	/** \brief 채팅방 이름을 반환하는 함수 \return _roomName*/
 	string GetRoomName() { return _roomName; }
+
+	/** \brief 채팅방 호스트 이름을 반환하는 함수 \return _hostName*/
+	string GetHostName() { return _hostName; }
 
 	/** \brief 채팅방 ID를 반환하는 함수 \return 채팅방 ID*/
 	unsigned long long GetRoomId() { return _roomId; }
@@ -30,8 +33,8 @@ public:
 	/** \brief 현재 채팅방에 있는 유저의 수를 반환하는 함수 \return 현재 채팅방에 있는 유저 수*/
 	unsigned int GetRoomUserCount() { return _userCount; }
 
-	/** \brief 현재 채팅방의 유저 map의 참조를 반환하는 함수 \return _users*/
-	map<unsigned long long, shared_ptr<User>>& GetUsersList() { return _users; }
+	/** \brief 현재 채팅방의 유저 배욜을 반환하는 함수 */
+	vector<pair<unsigned long long, string>> GetUsersList();
 
 	/** \brief 현재 채팅방을 관리하는 RoomManager를 반환하는 함수 \return _owner.lock() */
 	shared_ptr<RoomManager> GetRoomManager() { return _owner.lock(); }
@@ -46,11 +49,21 @@ private:
 	map<unsigned long long, shared_ptr<User>> _users;
 	weak_ptr<RoomManager> _owner;
 	string _roomName;
+	string _hostName;
 	unsigned int _maxUser;
 	unsigned int _userCount;
 	unsigned long long _roomId;
 };
 
+
+struct RoomData
+{
+	unsigned long long roomId;
+	string roomName;
+	string hostName;
+	unsigned int maxUser;
+	unsigned int userCount;
+};
 
 /**
  * \brief RoomManager 클래스
@@ -64,8 +77,10 @@ public:
 	~RoomManager();
 	bool EnterRoom(shared_ptr<User> user, unsigned long long roomId);
 	void LeaveRoom(shared_ptr<User> user);
-	unsigned long long CreateRoom(string roomName, unsigned int maxUser = 3);
+	unsigned long long CreateRoom(shared_ptr<User> user, string roomName, unsigned int maxUser = 100);
 	bool CanEnter(unsigned long long roomId);
+	vector<RoomData> GetRoomList();
+	RoomData GetRoomData(unsigned long long roomId);
 
 private:
 	void CloseRoom(unsigned long long roomId);
