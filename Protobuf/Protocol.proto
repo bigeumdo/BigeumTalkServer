@@ -1,6 +1,25 @@
 syntax = 'proto3';
 package Protocol;
 
+enum PacketId
+{
+	PACKET_ID_NONE = 0;
+	PACKET_ID_C_LOGIN = 1;
+	PACKET_ID_S_LOGIN = 2;
+	PACKET_ID_C_CREATE_ROOM = 3;
+	PACKET_ID_S_CREATE_ROOM = 4;
+	PACKET_ID_C_ENTER_ROOM = 5;
+	PACKET_ID_S_ENTER_ROOM = 6;
+	PACKET_ID_C_LEAVE_ROOM = 7;
+	PACKET_ID_S_LEAVE_ROOM = 8;
+	PACKET_ID_C_ROOM_LIST = 9;
+	PACKET_ID_S_ROOM_LIST = 10;
+	PACKET_ID_C_CHAT = 11;
+	PACKET_ID_S_CHAT = 12;
+	PACKET_ID_S_OTHER_ENTER = 13;
+	PACKET_ID_S_OTHER_LEAVE = 14;
+}
+
 message User 
 {
 	string nickname = 1;
@@ -10,8 +29,11 @@ message User
 
 message Room
 {
-	string name = 1;
-	uint64 id = 2;
+	uint64 id = 1;
+	string roomName = 2;
+	string hostName = 3;
+	uint32 maxUser = 4;
+	uint32 userCount = 5;
 }
 
 message C_LOGIN 
@@ -22,7 +44,7 @@ message C_LOGIN
 message S_LOGIN
 {
 	bool success = 1;
-	uint64 serverId = 2;
+	uint64 userId = 2;
 }
 
 message C_CREATE_ROOM
@@ -46,18 +68,8 @@ message C_ENTER_ROOM
 message S_ENTER_ROOM
 {
 	bool success = 1;
-
-	message RoomData 
-	{
-		string name = 1;
-		repeated User users = 2;
-	}
-
-	oneof is_fail
-	{
-		bool isFail = 2;
-		RoomData roomData = 3;
-	}
+	Room roomData = 2;
+	repeated User users = 3;
 }
 
 message C_LEAVE_ROOM

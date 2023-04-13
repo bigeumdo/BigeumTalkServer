@@ -7,24 +7,6 @@ class Session;
 using PacketHandlerFunc = std::function<bool(shared_ptr<Session>&, BYTE*, int)>;
 extern unordered_map<unsigned short, PacketHandlerFunc> GPacketHandler;
 
-enum : unsigned short
-{
-	P_C_LOGIN = 1000,
-	P_S_LOGIN,
-	P_C_CREATE_ROOM,
-	P_S_CREATE_ROOM,
-	P_C_ENTER_ROOM,
-	P_S_ENTER_ROOM,
-	P_C_LEAVE_ROOM,
-	P_S_LEAVE_ROOM,
-	P_C_ROOM_LIST,
-	P_S_ROOM_LIST,
-	P_C_CHAT,
-	P_S_CHAT,
-	P_S_OTHER_ENTER,
-	P_S_OTHER_LEAVE
-};
-
 /*
  * Handle_C_ 함수 정책
  * 비 정상적인 패킷에 한해서 false 반환
@@ -49,26 +31,45 @@ public:
 	 */
 	static void Init()
 	{
-		GPacketHandler.emplace(P_C_LOGIN, [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
-		{
-			return HandlePacketTemplate<Protocol::C_LOGIN>(Handle_C_LOGIN, session, buffer, len);
-		});
-		GPacketHandler.emplace(P_C_ENTER_ROOM, [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
-		{
-			return HandlePacketTemplate<Protocol::C_ENTER_ROOM>(Handle_C_ENTER_ROOM, session, buffer, len);
-		});
-		GPacketHandler.emplace(P_C_LEAVE_ROOM, [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
-		{
-			return HandlePacketTemplate<Protocol::C_LEAVE_ROOM>(Handle_C_LEAVE_ROOM, session, buffer, len);
-		});
-		GPacketHandler.emplace(P_C_ROOM_LIST, [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
-		{
-			return HandlePacketTemplate<Protocol::C_ROOM_LIST>(Handle_C_ROOM_LIST, session, buffer, len);
-		});
-		GPacketHandler.emplace(P_C_CHAT, [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
-		{
-			return HandlePacketTemplate<Protocol::C_CHAT>(Handle_C_CHAT, session, buffer, len);
-		});
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_LOGIN,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_LOGIN>(Handle_C_LOGIN, session, buffer, len);
+		                       });
+
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_CREATE_ROOM,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_CREATE_ROOM>(
+				                       Handle_C_CREATE_ROOM, session, buffer, len);
+		                       });
+
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_ENTER_ROOM,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_ENTER_ROOM>(
+				                       Handle_C_ENTER_ROOM, session, buffer, len);
+		                       });
+
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_LEAVE_ROOM,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_LEAVE_ROOM>(
+				                       Handle_C_LEAVE_ROOM, session, buffer, len);
+		                       });
+
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_ROOM_LIST,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_ROOM_LIST>(
+				                       Handle_C_ROOM_LIST, session, buffer, len);
+		                       });
+
+		GPacketHandler.emplace(Protocol::PACKET_ID_C_CHAT,
+		                       [](shared_ptr<Session>& session, BYTE* buffer, int len) -> bool
+		                       {
+			                       return HandlePacketTemplate<Protocol::C_CHAT>(Handle_C_CHAT, session, buffer, len);
+		                       });
 	}
 
 
@@ -92,32 +93,37 @@ public:
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_LOGIN(Protocol::S_LOGIN& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_LOGIN);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_LOGIN);
+	}
+
+	static shared_ptr<SendBuffer> MakeBuffer_S_CREATE_ROOM(Protocol::S_CREATE_ROOM& pkt)
+	{
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_CREATE_ROOM);
 	}
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_ENTER_ROOM(Protocol::S_ENTER_ROOM& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_ENTER_ROOM);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_ENTER_ROOM);
 	}
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_LEAVE_ROOM(Protocol::S_LEAVE_ROOM& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_LEAVE_ROOM);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_LEAVE_ROOM);
 	}
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_CHAT(Protocol::S_CHAT& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_CHAT);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_CHAT);
 	}
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_OTHER_ENTER(Protocol::S_OTHER_ENTER& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_OTHER_ENTER);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_OTHER_ENTER);
 	}
 
 	static shared_ptr<SendBuffer> MakeBuffer_S_OTHER_LEAVE(Protocol::S_OTHER_LEAVE& pkt)
 	{
-		return MakeSendBuffer(pkt, P_S_OTHER_LEAVE);
+		return MakeSendBuffer(pkt, Protocol::PACKET_ID_S_OTHER_LEAVE);
 	}
 
 private:
