@@ -11,10 +11,6 @@ Service::Service(shared_ptr<Iocp> iocp, wstring ip, unsigned short port)
 	InetPtonW(AF_INET, ip.c_str(), &_address.sin_addr);
 
 	_roomManager = make_shared<RoomManager>();
-
-	// TEMP CODE
-	// 서버에서 직접 룸 생성
-	_roomManager->CreateRoom("테스트 룸");
 }
 
 Service::~Service()
